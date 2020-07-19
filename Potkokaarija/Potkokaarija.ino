@@ -30,7 +30,8 @@ Tavoite: Yhdellä käärijän kierroksella paali liikkuu 5cm +-2cm.
 #define HALL_PIN 2 //Hall-anturin luku
 #define SYL_PIN 3 //Hydraylisylinterin ohjaus
 #define MOOT_PIN 4 //Hydraulimoottorin ohjaus
-#define SYLINTERI_MAX 1400 //Hydraulimoottorin ohjaus
+#define SYLINTERI_MAX 1400 //Hydraulisylinterin maksimipituus
+#define SYLINTERI_MIN 200 //Hydraulisylinterin minimipituus
 
 //Pysäytys
 boolean STOP = false;
