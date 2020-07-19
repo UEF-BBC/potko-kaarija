@@ -35,10 +35,13 @@ Tavoite: Yhdellä käärijän kierroksella paali liikkuu 5cm +-2cm.
 
 //Pysäytys
 boolean STOP = false;
+boolean AJA = false;
 
 //US anturi
 SR04 sr04 = SR04(ECHO_PIN,TRIG_PIN); //US-anturin luku
-long d_sylinteri; //US anturin mittaama lukema mm tarkkuudella.
+long d_sylinteri = 0; //US anturin mittaama lukema mm tarkkuudella.
+long d_sylinteri_vanhempi; //US anturin mittaama lukema mm tarkkuudella.
+long d_sylinteri_vanhin; //US anturin mittaama lukema mm tarkkuudella.
 
 //Hall-anturin pinni
 const byte interruptPin = HALL_PIN; //Pinni
@@ -76,12 +79,23 @@ void setup() {
 }
 
 
+// ------------PÄÄ LOOPPI -----------------------------------------
 void loop() {
+
   // put your main code here, to run repeatedly:
+   d_sylinteri_vanhin =   d_sylinteri_vanhempi;//Otetaan vanhat arvot ylös
+   d_sylinteri_vanhempi = d_sylinteri;
    d_sylinteri=sr04.Distance(); //US anturin mittaama lukema mm tarkkuudella.
-      Serial.print(d_sylinteri);   Serial.print("mm ");
+
+
+  //Lähde ajamaan kun tulee käsky ifrapunasensorilta
+  while(AJA)
+  { 
+    
+   
+   Serial.print(d_sylinteri);   Serial.print("mm ");
    paaliliike = d_sylinteri - tyhjamm;
-      Serial.print(paaliliike);   Serial.print("mm ");
+   Serial.print(paaliliike);   Serial.print("mm ");
 
   while (num != hallcount)
   {
@@ -146,7 +160,12 @@ void loop() {
   delay(500);
   moottori.write(60);// move servos to center position -> 60°
   }
+  
+
+  }
+
   delay(500);
+
 
   //Jos ajaa perille, pysäytä
   if (d_sylinteri > SYLINTERI_MAX) {
