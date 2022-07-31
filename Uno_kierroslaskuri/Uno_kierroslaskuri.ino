@@ -1,7 +1,13 @@
 #include <LiquidCrystal.h>  //LCD näytön ohjauskirjasto
+#include "SR04.h"
 #define Hall_Sensor A0          //A0 Luetaan Hall-anturin arvo pinnistä A0
 #define HALL_PIN 2 //Hall-anturin digitaalisen arvon luku A1 pinnistä 
 #define Nmuisti 5 // Ota talteen N viimeisintä arvoa ja kellonaikaa
+
+//Ultraäänianturi
+#define TRIG_PIN 8
+#define ECHO_PIN 9 
+
 
 //Alusta lcd näyttö
 LiquidCrystal lcd(12, 11, 5, 4, 6, 7);  //LCD-näyttöä ohjataan pinneillä 12,11,5,4,6,7
@@ -14,6 +20,10 @@ volatile unsigned long aika; // aika millisekunneissa arduinon käynnistymisest�
 unsigned long iAjat_ms[Nmuisti];  //Ajanhetket, jolloin magneetti ohittaa Hall-anturin
 float rps = 0; //kierrosnopeus sekunneissa;
 int laskuri = 0; //Ohitusten lukumäärä
+
+//Ultraäänianturi
+SR04 sr04 = SR04(ECHO_PIN,TRIG_PIN);
+long a; //US anturin mittaama lukema mm tarkkuudella.
 
 void setup() {
   // put your setup code here, to run once:
@@ -30,6 +40,11 @@ void setup() {
 
   //Interruptin alustus
   attachInterrupt(digitalPinToInterrupt(HALL_PIN), magneetinOhitus, RISING);
+
+   // Ultraäänianturi
+   Serial.begin(9600);//Initialization of Serial Port
+   delay(1000);
+  
 }
 
 void loop() {
@@ -60,6 +75,15 @@ void loop() {
      lcd.print(" ");
      lcd.print(rps);
    }
+
+
+
+//Ultraäänianturi  
+   a=sr04.Distance();
+   Serial.print(a);
+   Serial.println("mm");//The difference between "Serial.print" and "Serial.println" 
+                        //is that "Serial.println" can change lines.
+   delay(500);
    
 }
 

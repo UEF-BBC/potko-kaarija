@@ -2,8 +2,8 @@
 //2016.12.08
 #include "SR04.h"
 
-#define TRIG_PIN 12
-#define ECHO_PIN 10 
+#define TRIG_PIN 8
+#define ECHO_PIN 9 
 
 SR04 sr04 = SR04(ECHO_PIN,TRIG_PIN);
 long a; //US anturin mittaama lukema mm tarkkuudella.
