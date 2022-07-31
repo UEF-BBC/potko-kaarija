@@ -1,5 +1,5 @@
 #include <LiquidCrystal.h>
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+LiquidCrystal lcd(12, 11, 5, 4, 6, 7);
 
 const int switchPin = 6;
 int switchState = 0;
@@ -10,7 +10,6 @@ int tictoc = 0;
 void setup() {
   // put your setup code here, to run once:
   lcd.begin(16, 2);
-  pinMode(switchPin, INPUT);
   lcd.print("Hei vaan");
   lcd.setCursor(0,1);
   lcd.print("Rivi 2.  123");
