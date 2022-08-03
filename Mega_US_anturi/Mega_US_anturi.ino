@@ -16,7 +16,6 @@ void setup() {
 void loop() {
    a=sr04.Distance();
    Serial.print(a);
-   Serial.println("mm");//The difference between "Serial.print" and "Serial.println" 
-                        //is that "Serial.println" can change lines.
+   Serial.println(" cm");//The difference between "Serial.print" and "Serial.println" is that "Serial.println" can change lines.
    delay(500);
 }
