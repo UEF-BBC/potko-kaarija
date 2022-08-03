@@ -9,9 +9,12 @@
 SR04 sr04 = SR04(ECHO_PIN,TRIG_PIN);
 long a; //US anturin mittaama lukema cm tarkkuudella.
 long aMittaukset[Nmuisti];  //Viimeiset Nmuisti mittausta
+long aAjat[Nmuisti];  //Viimeiset Nmuisti mittauksen aikaa
 long average = 0;
 int errorcount = 0;
 int counter = 0;
+int mittaustaajuus = 200;
+double cmpersekunti = 0;
 
 void setup() {
    Serial.begin(9600);//Initialization of Serial Port
@@ -19,6 +22,7 @@ void setup() {
 
   for (int i = 0; i < Nmuisti; i = i + 1) {  // Alusta arrayn muuttujat
     aMittaukset[i] = 0; //Laitetaan alkuun arvot nolla
+    aAjat[i] = 0; //Laitetaan alkuun arvot nolla
   }
 
 }
@@ -37,14 +41,16 @@ int keskiarvo() {
 void paivita_muisti() {
    for (int i = Nmuisti - 1; i > 0; i = i - 1) {
      aMittaukset[i] = aMittaukset[i-1]; //Siirretään arvoja yhdellä eteenpäin
+     aAjat[i] = aAjat[i-1]; //Siirretään arvoja yhdellä eteenpäin
    }
    aMittaukset[0] = a;
+   aAjat[0] = millis();
  }  
  
 ///////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
   counter = counter + 1;
-   delay(200);
+   delay(mittaustaajuus);
 
   //Mitttaa etäisyys ultraäänianturilla
    a=sr04.Distance();
@@ -57,7 +63,7 @@ void loop() {
    }
 
    //Tarkista, että average ja uusi mittaus eivät eroa liian paljon (yli 10 cm)
-   int tolerance = 10;
+   int tolerance = 10; 
    if (average - tolerance < a && average + tolerance > a) {
 
      paivita_muisti();
@@ -78,6 +84,9 @@ void loop() {
 
    //kirjoita mittaustulos sarjaporttiin
    Serial.print(aMittaukset[0]);
-   Serial.print(" cm  Counter = ");//The difference between "Serial.print" and "Serial.println" is that "Serial.println" can change lines.
+   Serial.print(" ");
+   cmpersekunti = (double(aMittaukset[0])-double(aMittaukset[Nmuisti-1]))/((double(aAjat[0])-double(aAjat[Nmuisti-1]))/1000);
+   Serial.print(cmpersekunti);
+   Serial.print(" cm, cm/s,  Counter = ");//The difference between "Serial.print" and "Serial.println" is that "Serial.println" can change lines.
    Serial.println(counter);
 }
