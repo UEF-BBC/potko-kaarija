@@ -6,9 +6,6 @@ import machine
 from secret import ssid,password
 
 
-
-
-
 def connect():
     #Connect to WLAN
     wlan = network.WLAN(network.STA_IF)
@@ -29,20 +26,13 @@ def open_socket(ip):
     connection.listen(1)
     return connection    
 
-def webpage(temperature, state):
+def webpage(temperature):
     #Template HTML
     html = f"""
             <!DOCTYPE html>
             <html>
             <body>
-            <form action="./lighton">
-            <input type="submit" value="Light on" />
-            </form>
-            <form action="./lightoff">
-            <input type="submit" value="Light off" />
-            </form>
-            <p>LED is {state}</p>
-            <p>Temperature is {temperature}</p>
+            <p>Temp is {temperature}</p>
             </body>
             </html>
             """
@@ -53,31 +43,15 @@ def dataa():
 
 def serve(connection):
     #Start a web server
-    state = 'OFF'
-    pico_led.off()
-    temperature = 0
-    while True:
+     while True:
         client = connection.accept()[0]
         request = client.recv(1024)
         request = str(request)
-        print(request)
-        try:
-            request = request.split()[1]
-        except IndexError:
-            pass
-        if request == '/lighton?':
-            pico_led.on()
-            state = 'ON'
-        elif request =='/lightoff?':
-            pico_led.off()
-            state = 'OFF'
-        temperature = pico_temp_sensor.temp
-        html = webpage(temperature, state)
+        print(request[0:min([9,len(request)-1])])
+        speed = pico_temp_sensor.temp
+        html = webpage(speed)
         client.send(html)
-        #data = dataa()
-        #client.send(data)
-        client.close()
-    
+        client.close()    
 
 try:
     ip = connect()
