@@ -4,7 +4,9 @@ from time import sleep
 from picozero import pico_temp_sensor, pico_led
 import machine
 from secret import ssid,password
-
+#secret muotoa:
+# ssid = 'nimi'
+# password = 'ssid:n salasana'
 
 def connect():
     #Connect to WLAN
