@@ -33,7 +33,6 @@ def open_poll(socket1):
     #Link socket to poll
     poller = select.poll()
     poller.register(socket1, select.POLLIN)
-    #poller.register(socket1, select.POLLOUT)
     return poller
 
 def webpage(temperature):
@@ -50,15 +49,11 @@ def webpage(temperature):
 
 def serve(socket1,poller):
     #Start a web server
-    # Map file descriptors to socket objects
-    #Micropythonissa ei ole metodia socket.fileno()
-    #fd_to_socket = { socket1.fileno(): socket1,
-    #           }
+    #Micropythonissa ei ole metodia socket.fileno()    #fd_to_socket = { socket1.fileno(): socket1,         }
     while True:
          evts = poller.poll(5000)
          for sock, evt in evts:
-             # Retrieve the actual socket from its file descriptor
-             #s = fd_to_socket[fd]
+             # Retrieve the actual socket from its file descriptor          #s = fd_to_socket[fd]
              if evt and select.POLLIN:
                  if sock is socket1:  #Nähtävästi micropython palautta suoraan objektin, ei tarvise verrata file descriptoriin
                      #if sock == socket1.fileno():
