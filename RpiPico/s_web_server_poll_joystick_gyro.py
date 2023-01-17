@@ -3,18 +3,15 @@ import socket
 import select
 from time import sleep
 import time
-from picozero import pico_temp_sensor, pico_led, LED
+from picozero import pico_temp_sensor, pico_led
 import machine
-from machine import Pin, I2C
+from machine import Pin, ADC, I2C
 from imu import MPU6050
 from secret import ssid,password
 #secret muotoa:
 # ssid = 'nimi'
 # password = 'ssid:n salasana'
-# led = machine.Pin("LED", machine.Pin.OUT)
-# led.on()
-# sleep(0.2)
-# led.off()
+
 
 class gyro:
     from imu import MPU6050
@@ -46,6 +43,48 @@ class gyro:
     def get_N_rot(self):
         return self.Nrot
 
+
+class joystick:
+    VRX = ADC(Pin(27))
+    VRY = ADC(Pin(26))
+    SW = Pin(22,Pin.IN, Pin.PULL_UP)
+    middleX = 32500
+    middleY = 32500
+    minX = 336
+    minY = 336
+    maxX = 65535
+    maxY = 65535
+    calibration = (minX,minY,middleX,middleY,maxX,maxY)
+    xAxis = 0
+    yAxis = 0
+    switch = 0
+    normed_position=0.5
+    print("In constructor " +  str(calibration))
+    
+    def read_value(self):
+        self.xAxis = self.VRX.read_u16()
+        self.yAxis = self.VRY.read_u16()
+        self.switch = self.SW.value()
+    
+        print("X-axis: " + str(self.xAxis) + ", Y-axis: " + str(self.yAxis) + ", Switch " + str(self.switch))
+        if self.switch == 0:
+            print("Push button pressed!")
+        print(" ")
+        
+        if self.xAxis>self.calibration[3]:
+            print("In position norming " +  str(self.calibration))
+            self.normed_position = (self.xAxis-self.calibration[3])/self.calibration[4]+0.5
+        else:
+            self.normed_position = (self.xAxis-self.calibration[0])/self.calibration[3]*0.5
+
+        self.normed_position = max((0,self.normed_position))
+        self.normed_position = min((1,self.normed_position))
+        
+        return self
+
+    def return_normed_position(self):
+        return self.normed_position
+
 def connect():
     #Connect to WLAN
     wlan = network.WLAN(network.STA_IF)
@@ -53,16 +92,9 @@ def connect():
     wlan.connect(ssid, password)
     while wlan.isconnected() == False:
         print('Waiting for connection...')
-        pico_led.on()
-        sleep(0.2)
-        pico_led.off()
-        sleep(0.8)
+        sleep(1)
     ip = wlan.ifconfig()[0]    
     print(f'Connected on {ip}')
-    pico_led.on()
-    sleep(0.2)
-    pico_led.off()
-    sleep(0.8)
     return ip
     
 def open_socket(ip):
@@ -79,12 +111,13 @@ def open_poll(socket1):
     poller.register(socket1, select.POLLIN)
     return poller
 
-def webpage(kierroslkm,kulmanopeus):
+def webpage(joystickin_asento,kierroslkm,kulmanopeus):
     #Template HTML
     html = f"""
             <!DOCTYPE html>
             <html>
             <body>
+            <p>Joystickin asento on |{joystickin_asento}|</p>
             <p>Kierrosten lkm on %{kierroslkm}%</p>
             <p>Kulmanopeus on &{kulmanopeus}&</p>
             <p>Aika on "{time.ticks_ms()/1000}"</p>
@@ -93,15 +126,16 @@ def webpage(kierroslkm,kulmanopeus):
             """
     return str(html)
 
-def serve(socket1,poller):
+def serve(socket1,poller,joystick):
     #Start a web server
     #Micropythonissa ei ole metodia socket.fileno()    #fd_to_socket = { socket1.fileno(): socket1,         }
-    gr = gyro()  #Alusta gyroskooppi
-
+    gr = gyro()  
+    #gr = gr.imu.gyro_range(2)
+    #print("Gyro range on " + str(gr.imu.gyro_range()))
     while True:
-         gr = gr.update_gyro() #Mittaa gyro arvot joka kierroksella, jotta kierroslaskuri pysyy mukana ja liukuva keskiarvo pysyy tuoreissa arvoissa
-         #print(str(gr.buf_average()) + " While loopin alussa")
-         evts = poller.poll(50) #50 ms 
+         gr = gr.update_gyro()
+         #print(str(gr.buf_average()) + " True alussa")
+         evts = poller.poll(50)
          for sock, evt in evts:
              
              # Retrieve the actual socket from its file descriptor          #s = fd_to_socket[fd]
@@ -113,14 +147,21 @@ def serve(socket1,poller):
                      request = str(request)
                      #Pyyntö voi olla pitkä, tarkista ekat merkit minkä tyyppinen pyyntö on
                      print(request[0:min([9,len(request)-1])]) 
-                     html = webpage(gr.get_N_rot(),gr.buf_average())
-                     client.send(html) 
+                     print(str(joystick.xAxis) + "," + str(joystick.normed_position))
+                     #temperature = pico_temp_sensor.temp
+                     joystick = joystick.read_value()
+                     html = webpage(joystick.return_normed_position(),gr.get_N_rot(),gr.buf_average())
+                     client.send(html) #Lähety omaan polliin?
                      client.close()    
 
 try:
+    joystick = joystick()
+    joystick = joystick.read_value()
+    print(joystick.return_normed_position())
+    
     ip = connect()
     socket1 = open_socket(ip)
     poller = open_poll(socket1)
-    serve(socket1,poller)
+    serve(socket1,poller,joystick)
 except KeyboardInterrupt:
     machine.reset()  
