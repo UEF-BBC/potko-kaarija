@@ -1,7 +1,8 @@
 #
-#   Hello World client in Python
-#   Connects REQ socket to tcp://localhost:5555
-#   Sends "Hello" to server, expects "World" back
+# Ohjataan servoa joystickillä  
+# Joystick client 
+# Connects REQ socket to tcp://rpiosoite:5555
+# Lähettää Sensehatin joystickin käskyjä serverille
 #
 
 import zmq

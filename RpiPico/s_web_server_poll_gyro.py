@@ -21,6 +21,8 @@ class gyro:
     buf_len = 10
     bufidx = 0
     buf = [0]*buf_len
+    bufx = [0]*buf_len
+    bufy = [0]*buf_len
     i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
     imu = MPU6050(i2c)
     Nrot = 0
@@ -29,8 +31,10 @@ class gyro:
        
     def update_gyro(self):
         self.buf[self.bufidx] = self.imu.gyro.magnitude
+        self.bufx[self.bufidx] = self.imu.gyro.x
+        self.bufy[self.bufidx] = self.imu.gyro.y
         self.bufidx = self.bufidx + 1
-        #rottime = rottime + 
+        #Calculate N of rotations
         if self.bufidx > 9:
             self.bufidx = 0
             average = self.buf_average()
@@ -42,7 +46,15 @@ class gyro:
     def buf_average(self):
         average = sum(self.buf)/self.buf_len
         return average
-    
+
+    def bufx_average(self):
+        average = sum(self.bufx)/self.buf_len
+        return average
+
+    def bufy_average(self):
+        average = sum(self.bufy)/self.buf_len
+        return average
+
     def get_N_rot(self):
         return self.Nrot
 
@@ -79,7 +91,7 @@ def open_poll(socket1):
     poller.register(socket1, select.POLLIN)
     return poller
 
-def webpage(kierroslkm,kulmanopeus):
+def webpage(kierroslkm,kulmanopeus,kulmanopeusx,kulmanopeusy):
     #Template HTML
     html = f"""
             <!DOCTYPE html>
@@ -87,6 +99,8 @@ def webpage(kierroslkm,kulmanopeus):
             <body>
             <p>Kierrosten lkm on %{kierroslkm}%</p>
             <p>Kulmanopeus on &{kulmanopeus}&</p>
+            <p>Kulmanopeusx on !{kulmanopeusx}!</p>
+            <p>Kulmanopeusy on #{kulmanopeusy}#</p>
             <p>Aika on "{time.ticks_ms()/1000}"</p>
             </body>
             </html>
@@ -113,7 +127,7 @@ def serve(socket1,poller):
                      request = str(request)
                      #Pyyntö voi olla pitkä, tarkista ekat merkit minkä tyyppinen pyyntö on
                      print(request[0:min([9,len(request)-1])]) 
-                     html = webpage(gr.get_N_rot(),gr.buf_average())
+                     html = webpage(gr.get_N_rot(),gr.buf_average(),gr.bufx_average(),gr.bufy_average())
                      client.send(html) 
                      client.close()    
 
