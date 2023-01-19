@@ -99,9 +99,9 @@ def webpage(kierroslkm,kulmanopeus,kulmanopeusx,kulmanopeusy):
             <body>
             <p>Kierrosten lkm on %{kierroslkm}%</p>
             <p>Kulmanopeus on &{kulmanopeus}&</p>
-            <p>Kulmanopeusx on !{kulmanopeusx}!</p>
+            <p>Kulmanopeusx on *{kulmanopeusx}*</p>
             <p>Kulmanopeusy on #{kulmanopeusy}#</p>
-            <p>Aika on "{time.ticks_ms()/1000}"</p>
+            <p>Aika on ={time.ticks_ms()/1000}=</p>
             </body>
             </html>
             """
