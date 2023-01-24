@@ -11,13 +11,17 @@ from secret import ssid,password
 #secret muotoa:
 # ssid = 'nimi'
 # password = 'ssid:n salasana'
+import uasyncio as asyncio
+print(uasyncio.__version__)
+
 # led = machine.Pin("LED", machine.Pin.OUT)
 # led.on()
 # sleep(0.2)
 # led.off()
 
-class gyro:
+class gyro():
     from imu import MPU6050
+    import uasyncio as asyncio
     buf_len = 10
     bufidx = 0
     buf = [0]*buf_len
@@ -28,12 +32,18 @@ class gyro:
     Nrot = 0
     rottime = 0
     timezero = time.ticks_ms()
+    
+    def __init__(self):
+        import uasyncio as asyncio
+        print("Gyro initialisoinnissa")
+        asyncio.create_task(self.update_gyro())
        
     def update_gyro(self):
         self.buf[self.bufidx] = self.imu.gyro.magnitude
         self.bufx[self.bufidx] = self.imu.gyro.x
         self.bufy[self.bufidx] = self.imu.gyro.y
         self.bufidx = self.bufidx + 1
+        print("Update gyrossa")
         #Calculate N of rotations
         if self.bufidx > 9:
             self.bufidx = 0
@@ -41,7 +51,7 @@ class gyro:
             self.Nrot = self.Nrot + average/360*(time.ticks_ms()-self.timezero)/1000
             print("Nrot " + str(self.Nrot) + " average=" + str(average) + "  tick_ms " + str(time.ticks_ms()) + "  " + str(self.timezero) + " " + str((time.ticks_ms()-self.timezero)/1000))
             self.timezero = time.ticks_ms()
-        return self
+        await asyncio.sleep_ms(10)
     
     def buf_average(self):
         average = sum(self.buf)/self.buf_len
@@ -107,15 +117,18 @@ def webpage(kierroslkm,kulmanopeus,kulmanopeusx,kulmanopeusy):
             """
     return str(html)
 
-def serve(socket1,poller):
+async def serve(socket1,poller):
     #Start a web server
     #Micropythonissa ei ole metodia socket.fileno()    #fd_to_socket = { socket1.fileno(): socket1,         }
+    print("Servessä")
     gr = gyro()  #Alusta gyroskooppi
+    #Gyroskoopin pitäisi nyt ajaa päivitystä jatkuvasti
 
     while True:
-         gr = gr.update_gyro() #Mittaa gyro arvot joka kierroksella, jotta kierroslaskuri pysyy mukana ja liukuva keskiarvo pysyy tuoreissa arvoissa
+         #gr = gr.update_gyro() #Mittaa gyro arvot joka kierroksella, jotta kierroslaskuri pysyy mukana ja liukuva keskiarvo pysyy tuoreissa arvoissa
          #print(str(gr.buf_average()) + " While loopin alussa")
-         evts = poller.poll(50) #50 ms 
+         #await asyncio.sleep(0)
+         evts = poller.poll(2000) #50 ms 
          for sock, evt in evts:
              
              # Retrieve the actual socket from its file descriptor          #s = fd_to_socket[fd]
@@ -123,11 +136,12 @@ def serve(socket1,poller):
                  if sock is socket1:  #Nähtävästi micropython palautta suoraan objektin, ei tarvise verrata file descriptoriin
                      #if sock == socket1.fileno():
                      client = socket1.accept()[0]
-                     request = client.recv(1024)
+                     request = client.recv(512)
                      request = str(request)
                      #Pyyntö voi olla pitkä, tarkista ekat merkit minkä tyyppinen pyyntö on
-                     print(request[0:min([9,len(request)-1])]) 
+                     print(f"Clientin pyyntö: {request[0:min([9,len(request)-1])]}") 
                      html = webpage(gr.get_N_rot(),gr.buf_average(),gr.bufx_average(),gr.bufy_average())
+                     print(f"Lähetin: {html}") 
                      client.send(html) 
                      client.close()    
 
@@ -135,6 +149,7 @@ try:
     ip = connect()
     socket1 = open_socket(ip)
     poller = open_poll(socket1)
+    print("Ennen serveä")
     serve(socket1,poller)
 except KeyboardInterrupt:
     machine.reset()  
