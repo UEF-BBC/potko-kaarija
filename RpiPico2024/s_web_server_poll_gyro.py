@@ -12,7 +12,7 @@ from secret import ssid,password
 # ssid = 'nimi'
 # password = 'ssid:n salasana'
 import uasyncio as asyncio
-print(uasyncio.__version__)
+print(asyncio.__version__)
 
 # led = machine.Pin("LED", machine.Pin.OUT)
 # led.on()

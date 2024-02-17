@@ -7,7 +7,8 @@ from picozero import pico_temp_sensor, pico_led
 import machine
 import json
 from settings import ssid, password
-
+from imu import MPU6050
+from machine import Pin, I2C
 
 #Save file below to RpiPico
 #  #settings.py
@@ -31,11 +32,11 @@ def connect():
 
 def open_socket(ip):
     # Open a socket
-    address = (ip, 80)
-    connection = socket.socket()
-    connection.bind(address)
-    connection.listen(1)
-    return connection
+    addr = (ip, 80)
+    s = socket.socket()
+    s.bind(addr)
+    s.listen(1)
+    return s
 
 def webpage(temperature, state):
     #Template HTML
@@ -55,13 +56,13 @@ def webpage(temperature, state):
             """
     return str(html)
 
-def serve(connection):
+def serve(s):
     #Start a web server
     state = 'OFF'
     pico_led.off()
     temperature = 0
     while True:
-        client = connection.accept()[0]
+        client = s.accept()[0]
         request = client.recv(1024)
         request = str(request)
         print(request)
