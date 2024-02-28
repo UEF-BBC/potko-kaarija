@@ -58,9 +58,26 @@ def webpage(Nrot, gyrotime):
             """
     return str(html)
 
-# main function to run web server using blocking code
-def web_server(ip,Nrot_and_time):
 
+# main control loop
+def gyro_loop(Nrot_and_time):
+    gr = gyro()
+    while True:
+        gr.update_gyro()
+  
+        lock.acquire()
+        Nrot_and_time[0:1] = gr.get_Nrot_and_time()
+        print(f"Gyro loop Nrot_and_time {Nrot_and_time[0:1]}")
+        lock.release()
+
+        sleep(0.5)
+
+# main function to run web server using blocking code
+def web_server(s):
+
+    # run gyro control loop on second processor
+    Nrot_and_time = [0.0,0.0,[1]]
+    _thread.start_new_thread(gyro_loop, (Nrot_and_time,))
     # main web server loop
     state = 'OFF'
     pico_led.off()
@@ -85,38 +102,26 @@ def web_server(ip,Nrot_and_time):
         lock.acquire()
         Nrot=Nrot_and_time[0]
         gyrotime=Nrot_and_time[1]
+        print(f"Nrot_and_time {Nrot_and_time}")
         lock.release()
         html = webpage(Nrot,gyrotime )
         client.send(html)
         client.close()
 
 
-# main control loop
-def main_loop(Nrot_and_time):
-    gr = gyro()
-    while True:
-        gr.update_gyro()
-  
-        lock.acquire()
-        Nrot_and_time = gr.get_Nrot_and_time()
-        lock.release()
 
-        sleep(0.1)
 
 
 #Setup Wifi connection
 ip = connect()
 
-Nrot_and_time = [0,0]
 
-# run main control loop on second processor
-second_thread = _thread.start_new_thread(main_loop, (Nrot_and_time,))
 
 # main loop on first processor
 # NOTE : webs server doesn't seem to run on second core (???)
 try:
     ip = connect()
     s = open_socket(ip)
-    web_server(s,Nrot_and_time)
+    web_server(s)
 except KeyboardInterrupt:
     machine.reset()
