@@ -71,7 +71,7 @@ class gyro():
                     gyrotulos = self.get_Nrot_and_time() \
                         + [gr.buf_average(),gr.bufx_average(),gr.bufy_average()]
                     print(f"Nrot,timems,bufave,bufxave,bufyave: {gyrotulos}") 
-
+                    print(f"{self.get_Nrot_and_time()}")
                 sleep(0.1)
         
         except KeyboardInterrupt:

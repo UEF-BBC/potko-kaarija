@@ -1,4 +1,5 @@
 import VL53L1X
+from  time import sleep
 
 # Open and start the VL53L1X sensor.
 # If you've previously used change-address.py then you
@@ -15,7 +16,7 @@ tof.open()
 # should use `tof.start_ranging(0)`
 # tof.set_timing(66000, 70)
 
-tof.start_ranging(1)  # Start ranging
+tof.start_ranging(2)  # Start ranging
                       # 0 = Unchanged
                       # 1 = Short Range
                       # 2 = Medium Range
@@ -23,6 +24,11 @@ tof.start_ranging(1)  # Start ranging
 
 # Grab the range in mm, this function will block until
 # a reading is returned.
-distance_in_mm = tof.get_distance()
+while 1:
+    distance_in_mm = tof.get_distance()
+
+    print(f"Etäisyys on {distance_in_mm} mm")
+    sleep(1)
+
 
 tof.stop_ranging()

@@ -45,14 +45,8 @@ def webpage(Nrot, gyrotime):
     html = f"""
             <!DOCTYPE html>
             <html>
-            <form action="./lighton">
-            <input type="submit" value="Light on" />
-            </form>
-            <form action="./lightoff">
-            <input type="submit" value="Light off" />
-            </form>
-            <p>Number of rotations is {Nrot}</p>
-            <p>Time in gyroscope is {gyrotime}</p>
+            <p>Number of rotations is -- {Nrot}</p>
+            <p>Time in gyroscope is __ {gyrotime}</p>
             </body>
             </html>
             """
@@ -67,16 +61,16 @@ def gyro_loop(Nrot_and_time):
   
         lock.acquire()
         Nrot_and_time[0:1] = gr.get_Nrot_and_time()
-        print(f"Gyro loop Nrot_and_time {Nrot_and_time[0:1]}")
+        #print(f"Gyro loop Nrot {Nrot_and_time[0]} and time {Nrot_and_time[1]}")
         lock.release()
 
-        sleep(0.5)
+        sleep(0.05)
 
 # main function to run web server using blocking code
 def web_server(s):
 
     # run gyro control loop on second processor
-    Nrot_and_time = [0.0,0.0,[1]]
+    Nrot_and_time = [0.0,0.0]
     _thread.start_new_thread(gyro_loop, (Nrot_and_time,))
     # main web server loop
     state = 'OFF'
@@ -102,7 +96,7 @@ def web_server(s):
         lock.acquire()
         Nrot=Nrot_and_time[0]
         gyrotime=Nrot_and_time[1]
-        print(f"Nrot_and_time {Nrot_and_time}")
+        print(f"Nrot {Nrot} and time {gyrotime}")
         lock.release()
         html = webpage(Nrot,gyrotime )
         client.send(html)
