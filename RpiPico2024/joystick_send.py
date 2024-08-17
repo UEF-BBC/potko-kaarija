@@ -31,7 +31,7 @@ while True:
     data = {'xValue': xValue, 'yValue': yValue, 'buttonValue': buttonValue}
 
      
-    url = f"http://{hostip}:5000/post"
+    url = f"http://{hostip}:5000/echo"
     print(f"URL is {url}")
     print(f"data is {data}")
     wifi.send_post_request(url, data)

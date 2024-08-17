@@ -109,8 +109,8 @@ if __name__ == "__main__":
         ip = connect_to_wifi()
 
         # Get the IP address of the host
-        host = "DESKTOP-4FRRIC4"
-        #host = "raspberrypi5"
+        #host = "DESKTOP-4FRRIC4"
+        host = "raspberrypi5"
         hostip = get_host_ip(host)
         print(f"Host and IP: {host}, {hostip}")
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         #send_post_request(url, data)
     
         url = hostip
-        url = f"http://{hostip}/echo"
+        url = f"http://{hostip}:5000/echo"
         print(f"URL is {url}")
         print(f"data is {data}")
         send_post_request(url, data)
