@@ -1,40 +1,29 @@
-import network
 import socket
-import time
+import platform
+import socket
 
-def connect_to_wifi(ssid, password):
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
-    wlan.connect(ssid, password)
+def get_device_info():
+    # Get the hostname and IP address of the device
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    return hostname, ip_address
 
-    while not wlan.isconnected():
-        print('Connecting to network...')
-        time.sleep(1)
-    print('Connected to', ssid)
-    print('Network config:', wlan.ifconfig())
-
-def respond_to_discovery():
-    connect_to_wifi('YourNetworkSSID', 'YourNetworkPassword')
-
+def respond_to_requests():
     # Create a UDP socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    s.bind(('', 12345))  # Bind to the same port as the request
-
-    # Get device IP address
-    ip_address = network.WLAN(network.STA_IF).ifconfig()[0]
-    device_name = 'device_name'  # Set a unique name for this device
+    s.bind(('', 12345))  # Bind to port 12345
 
     while True:
         data, addr = s.recvfrom(1024)
-        if data.decode().startswith('GET_IP:'):
-            requested_name = data.decode().split(':')[1]
-            if requested_name == device_name:
-                response_message = f'{device_name} {ip_address}'
-                s.sendto(response_message.encode(), addr)
-                print(f'Sent IP address of {device_name} to {addr}')
-    
-    s.close()
+        if data.decode() == "REQUEST_DEVICE_INFO":
+            # Get device info
+            hostname, ip_address = get_device_info()
 
-# Run the response function
-respond_to_discovery()
+            # Prepare response message
+            response_message = f"{hostname} {ip_address}"
+            s.sendto(response_message.encode(), addr)
+            print(f"Sent response to {addr}: {response_message}")
+
+if __name__ == "__main__":
+    respond_to_requests()
