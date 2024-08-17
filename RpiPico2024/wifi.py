@@ -58,29 +58,25 @@ def send_post_request(url, data):
         print('Error:', e)
 
       
-def request_ip_address(device_name):
+def request_device_info():
 
     # Create a UDP socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    s.bind(('', 12345))  # Bind to an arbitrary port
 
-    # Send broadcast request
-    request_message = f'GET_IP:{device_name}'
-    s.sendto(request_message.encode(), ('255.255.255.255', 12345))
-    print(f'Broadcast request for {device_name} sent')
+    # Broadcast a message to request device information
+    message = "REQUEST_DEVICE_INFO"
+    s.sendto(message.encode(), ('255.255.255.255', 12345))
+    print("Broadcast request sent")
 
     # Listen for responses
-    s.settimeout(3)  # Set timeout for receiving responses
+    s.settimeout(5)  # 5 seconds timeout
     try:
         while True:
             data, addr = s.recvfrom(1024)
-            response = data.decode()
-            if response.startswith(device_name):
-                print(f'{device_name} IP address is {response.split()[1]}')
-                break
-    except OSError:
-        print('Timeout or other error occurred')
+            print(f"Received from {addr}: {data.decode()}")
+    except OSError as e:
+        print("Timeout: No more responses")
     
     s.close()
 
@@ -92,7 +88,7 @@ try:
     # Call the function to start discovering devices
     #Could be made with mDNS (Multicast DNS) but seemed complicated
     #discover_devices(ip)
-    request_ip_address('raspberrypi5')
+    request_device_info()
 
     url = 'https://httpbin.org/post'
     # Data to be sent
