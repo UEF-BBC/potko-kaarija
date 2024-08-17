@@ -23,9 +23,14 @@ while True:
     yValue = yAxis.read_u16()
     buttonValue= button.value()
     print(str(xValue) +", " + str(yValue) + " -- " + str(buttonValue))
-
-    data = {'xValue': xValue, 'yValue': yValue, 'buttonValue': buttonValue}
  
+   #Scale from 0-1
+    xValue = xValue/65535
+    yValue = yValue/65535
+ 
+    data = {'xValue': xValue, 'yValue': yValue, 'buttonValue': buttonValue}
+
+     
     url = f"http://{hostip}/echo"
     print(f"URL is {url}")
     print(f"data is {data}")
