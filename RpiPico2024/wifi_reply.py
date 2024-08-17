@@ -1,20 +1,44 @@
 import network
 import socket
 import time
+import sys
+import os
+sys.path.append('/home/pi/Desktop')
+from secret import secrets 
 
-def connect_to_wifi(ssid, password):
+
+def connect_to_wifi(secrets):
+
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
-    wlan.connect(ssid, password)
+    available_networks = wlan.scan()
 
-    while not wlan.isconnected():
-        print('Connecting to network...')
-        time.sleep(1)
-    print('Connected to', ssid)
-    print('Network config:', wlan.ifconfig())
+    # Go through the available networks and connect to the first for which SSID and password are defined in secret.py
+    ip = 0
+    for network_ii in available_networks:
+        ssid = network_ii[0].decode()  # Network name (SSID)
+        for secretii in secrets:
+            if ssid == secretii.ssid:
+                wlan.connect(secretii.ssid, secretii.password)
+                while not wlan.isconnected():
+                    print('Waiting for connection...')
+                    pico_led.on()
+                    sleep(0.2)
+                    pico_led.off()
+                    sleep(0.6)
+                    
+                ip = wlan.ifconfig()[0]
+                break
+        if ip:
+            break
+                
+    print(f'Connected to network {secretii.ssid} with ip {ip}')
+    pico_led.on()
+    return ip
+
 
 def respond_to_discovery():
-    connect_to_wifi('YourNetworkSSID', 'YourNetworkPassword')
+    connect_to_wifi(secrets)
 
     # Create a UDP socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
