@@ -6,8 +6,11 @@ import time
 from picozero import pico_temp_sensor, pico_led, LED
 import machine
 from machine import Pin, I2C
-from imu import MPU6050
-from secret import ssid,password
+from imu import MPU6050 #  SET THIS BACK
+#from secret import ssid,password
+from secret import secrets 
+ssid = secrets[0].ssid
+password = secrets[0].password
 #secret muotoa:
 # ssid = 'nimi'
 # password = 'ssid:n salasana'
@@ -146,6 +149,7 @@ async def serve(socket1,poller):
                      client.close()    
 
 try:
+    print("Ennen connectiä")
     ip = connect()
     socket1 = open_socket(ip)
     poller = open_poll(socket1)

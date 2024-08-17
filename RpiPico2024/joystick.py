@@ -10,10 +10,10 @@ import utime
 yAxis = ADC(Pin(27))
 xAxis = ADC(Pin(26))
 
-button = Pin(29,Pin.IN, Pin.PULL_UP)
+button = Pin(22,Pin.IN, Pin.PULL_UP)
 
 while True:
-    xValue = xAxis.read_u16()
+    xValue = xAxis.read_u16() #values between 0 and 65535
     yValue = yAxis.read_u16()
     buttonValue= button.value()
     print(str(xValue) +", " + str(yValue) + " -- " + str(buttonValue))
