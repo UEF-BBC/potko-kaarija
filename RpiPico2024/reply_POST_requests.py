@@ -13,4 +13,4 @@ def echo():
 
 if __name__ == '__main__':
     # Bind to all available IP addresses on the local network
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=5000)
