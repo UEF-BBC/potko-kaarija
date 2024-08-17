@@ -104,32 +104,33 @@ def send_post_request(url, data):
     except Exception as e:
         print('Error:', e)
 
-try:
-    ip = connect_to_wifi()
+if __name__ == "__main__":
+    try:
+        ip = connect_to_wifi()
 
-    # Get the IP address of the host
-    host = "DESKTOP-4FRRIC4"
-    #host = "raspberrypi5"
-    hostip = get_host_ip(host)
-    print(f"Host and IP: {host}, {hostip}")
+        # Get the IP address of the host
+        host = "DESKTOP-4FRRIC4"
+        #host = "raspberrypi5"
+        hostip = get_host_ip(host)
+        print(f"Host and IP: {host}, {hostip}")
 
-    # Data to be sent
-    data = {'key1': 'value1', 'key2': 'value2'}
- 
-    url = 'https://httpbin.org/post'
-    #send_post_request(url, data)
-  
-    url = hostip
-    url = f"http://{hostip}/echo"
-    print(f"URL is {url}")
-    print(f"data is {data}")
-    send_post_request(url, data)
+        # Data to be sent
+        data = {'key1': 'value1', 'key2': 'value2'}
+    
+        url = 'https://httpbin.org/post'
+        #send_post_request(url, data)
+    
+        url = hostip
+        url = f"http://{hostip}/echo"
+        print(f"URL is {url}")
+        print(f"data is {data}")
+        send_post_request(url, data)
 
- 
-    print("All done")
-    #socket1 = open_socket(ip)
-    #poller = open_poll(socket1)
-    #print("Ennen serveä")
-    #serve(socket1,poller)
-except KeyboardInterrupt:
-    machine.reset()  
+    
+        print("All done")
+        #socket1 = open_socket(ip)
+        #poller = open_poll(socket1)
+        #print("Ennen serveä")
+        #serve(socket1,poller)
+    except KeyboardInterrupt:
+        machine.reset()  
