@@ -68,7 +68,7 @@ def request_device_info():
             data, addr = s.recvfrom(1024)
             print(f"Received from {addr}: {data.decode()}")
             hostname_ip = data.decode().split()
-            devices.append({"hostname":hostname_ip[0], "ip":hostname_ip[1]})
+            devices.append({"hostname":hostname_ip[0], "ip":addr[0]})
     except OSError as e:
         print("Timeout: No more responses")
     
