@@ -36,5 +36,5 @@ while True:
     print(f"data is {data}")
     wifi.send_post_request(url, data)
 
-    utime.sleep(0.5)
+    utime.sleep(0.2)
 
