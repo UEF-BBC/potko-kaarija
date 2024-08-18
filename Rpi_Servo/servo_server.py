@@ -16,7 +16,18 @@ def echo():
     print("Got message")
     data = request.get_json() or request.form.to_dict()
     
-    print(data)
+    dataj = request.get_json()
+
+    print("Received data:",dataj)
+
+    xValue = dataj.get('xValue')
+
+    print("xValue is ",xValue)
+
+    #Scale to range the servo wants
+    xScaled = xValue*2000 + 500
+
+    pwm.setServoPulse200(0,xScaled)   
 
     ## setServoPulse(2,2500)
     #for i in range(500,2500,10):  
