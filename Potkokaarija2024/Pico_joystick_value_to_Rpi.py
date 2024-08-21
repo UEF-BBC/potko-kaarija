@@ -24,16 +24,22 @@ xAxis = ADC(Pin(26))
 
 button = Pin(22,Pin.IN, Pin.PULL_UP)
 
+#Connect to local wifi network
+picoip = wifi.connect_to_wifi()
+if picoip == 0:
+    print("Failed to connect to wifi")
+    while True:
+        indicate_error()
 
 #Define connection to Rpi which runs servo server
 hostname = "raspberrypi5"
 hostip = wifi.get_host_ip(hostname)
+print(f"Hostname and IP: {hostname}, {hostip}")
 if hostip == 0:
     print("Failed to get IP address for the host")
     while True:
-        indicate_error(0.2)
+        indicate_error(0.15)
 
-print(f"Hostname and IP: {hostname}, {hostip}")
 #It is decided that the joystick values are sent via POST request to the Rpi on port 5000
 url = f"http://{hostip}:5000/echo"
 print(f"URL is {url}")
@@ -53,13 +59,7 @@ def send_joystick_data(x_value, y_value,buttonValue):
 
 #Main code
 
-#Connect to local wifi network
-picoip = wifi.connect_to_wifi()
-if picoip == 0:
-    print("Failed to connect to wifi")
-    while True:
-        indicate_error()
-    
+   
 
 #while True:
 #    #Read values from joystick
@@ -77,6 +77,7 @@ button_was_pressed = False
 last_x_value = 0
 last_y_value = 0
 last_change_time = 0
+tolerance = 400
 
 while True:
     button_value = button.value()
@@ -88,22 +89,26 @@ while True:
         last_y_value = yAxis.read_u16()
         last_change_time = utime.ticks_ms()
         
-        send_joystick_data(last_x_value, last_y_value,button_value)
+        xValue = current_x_value/65535
+        yValue = current_y_value/65535            
+        send_joystick_data(xValue, yValue,button_value)
     
     if button_was_pressed:
         current_x_value = xAxis.read_u16()
         current_y_value = yAxis.read_u16()
         
         # Send new data if joystick values have changed
-        if current_x_value != last_x_value or current_y_value != last_y_value:
+        if abs(current_x_value - last_x_value)>tolerance or abs(current_y_value - last_y_value)>tolerance:
             last_x_value = current_x_value
             last_y_value = current_y_value
             last_change_time = utime.ticks_ms()  # Reset timer because values have changed
             
-            send_joystick_data(current_x_value, current_y_value,button_value)
+            xValue = current_x_value/65535
+            yValue = current_y_value/65535            
+            send_joystick_data(xValue, yValue,button_value)
         
-        # Check if joystick values have not changed for 20 seconds
-        if utime.ticks_diff(utime.ticks_ms(), last_change_time) > 20000:
+        # Check if joystick values have not changed for 10 seconds
+        if utime.ticks_diff(utime.ticks_ms(), last_change_time) > 10000:
             print("No change detected for 20 seconds. Stopping data transmission.")
             button_was_pressed = False
 

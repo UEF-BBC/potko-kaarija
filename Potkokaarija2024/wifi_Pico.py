@@ -46,6 +46,7 @@ def connect_to_wifi():
             break
     if ip==0: # No network found
         ssid_secrets = [secretii.ssid for secretii in secrets] 
+        print("No known network found")
         raise Exception(f'None of the networks {ssidnames} found in secrets ssid list {ssid_secrets}')
                 
     print(f'Connected to network {secretii.ssid} with ip {ip}')

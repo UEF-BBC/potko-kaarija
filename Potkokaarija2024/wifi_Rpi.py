@@ -8,7 +8,7 @@ def get_device_info():
     ip_address = socket.gethostbyname(hostname)
     return hostname, ip_address
 
-def respond_to_requests():
+def respond_to_device_query():
     # Create a UDP socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -26,4 +26,4 @@ def respond_to_requests():
             print(f"Sent response to {addr}: {response_message}")
 
 if __name__ == "__main__":
-    respond_to_requests()
+    respond_to_device_query()

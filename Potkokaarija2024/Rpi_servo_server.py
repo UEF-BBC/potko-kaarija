@@ -2,9 +2,16 @@ import PCA9685
 import time
 
 from flask import Flask, request, jsonify
+import wifi_Rpi as wifi
+import asyncio
+import threading
+
+async def reply_to_device_queries_on_background():
+    wifi.respond_to_device_query()
 
 pwm = PCA9685.PCA9685(0x40, debug=False)
 pwm.setPWMFreq(200)
+
 
 
 app = Flask(__name__)
@@ -41,10 +48,24 @@ def echo():
     return jsonify(data)
 
 
-if __name__ == '__main__':
-    # Bind to all available IP addresses on the local network
+# Function to run Flask in a separate thread
+def run_flask_app():
     app.run(host='0.0.0.0', port=5000)
 
+# Main function to run both Flask and asyncio
+def main():
+    # Start Flask app in a separate thread
+    flask_thread = threading.Thread(target=run_flask_app)
+    flask_thread.start()
+
+    # Run asyncio loop in the main thread
+    asyncio.run(reply_to_device_queries_on_background())
+
+
+if __name__ == '__main__':
+    main()
+    # Bind to all available IP addresses on the local network
+    #app.run(host='0.0.0.0', port=5000)
 
 
 
