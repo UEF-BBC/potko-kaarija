@@ -89,8 +89,8 @@ while True:
         last_y_value = yAxis.read_u16()
         last_change_time = utime.ticks_ms()
         
-        xValue = current_x_value/65535
-        yValue = current_y_value/65535            
+        xValue = last_x_value/65535
+        yValue = last_y_value/65535            
         send_joystick_data(xValue, yValue,button_value)
     
     if button_was_pressed:
