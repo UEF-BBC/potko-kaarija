@@ -26,8 +26,10 @@ def connect_to_wifi():
 
     # Go through the available networks and connect to the first for which SSID and password are defined in secret.py
     ip = 0
+    ssidnames = []
     for network_ii in available_networks:
         ssid = network_ii[0].decode()  # Network name (SSID)
+        ssidnames.append(ssid)
         for secretii in secrets:
             if ssid == secretii.ssid:
                 wlan.connect(secretii.ssid, secretii.password)
@@ -42,6 +44,9 @@ def connect_to_wifi():
                 break
         if ip:
             break
+    if ip==0: # No network found
+        ssid_secrets = [secretii.ssid for secretii in secrets] 
+        raise Exception(f'None of the networks {ssidnames} found in secrets ssid list {ssid_secrets}')
                 
     print(f'Connected to network {secretii.ssid} with ip {ip}')
     pico_led.on()
@@ -82,7 +87,7 @@ def get_host_ip(wanted_hostname):
 
     #Check if wanted_hostname is in the list
     host = False
-    host_ip = ""
+    host_ip = 0
     for device in devices:
         if device["hostname"] == wanted_hostname:
             host = True
