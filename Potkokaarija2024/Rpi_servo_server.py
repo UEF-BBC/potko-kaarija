@@ -6,11 +6,12 @@ import wifi_Rpi as wifi
 import asyncio
 import threading
 
+
 async def reply_to_device_queries_on_background():
     wifi.respond_to_device_query()
 
 pwm = PCA9685.PCA9685(0x40, debug=False)
-pwm.setPWMFreq(200)
+pwm.setPWMFreq(50)
 
 
 
@@ -28,13 +29,19 @@ def echo():
     print("Received data:",dataj)
 
     xValue = dataj.get('xValue')
+    yValue = dataj.get('yValue')
 
     print("xValue is ",xValue)
+    print("yValue is ",yValue)
 
     #Scale to range the servo wants
     xScaled = xValue*2000 + 500
+    yScaled = yValue*2000 + 500
 
-    pwm.setServoPulse200(0,xScaled)   
+    pwm.setServoPulseScaled(0,xScaled)   
+    pwm.setServoPulseScaled(1,yScaled)   
+#    pwm.setServoPulse200(0,xScaled)   
+#    pwm.setServoPulse200(1,yScaled)   
 
     ## setServoPulse(2,2500)
     #for i in range(500,2500,10):  
