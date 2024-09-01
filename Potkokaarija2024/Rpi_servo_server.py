@@ -11,7 +11,7 @@ async def reply_to_device_queries_on_background():
     wifi.respond_to_device_query()
 
 pwm = PCA9685.PCA9685(0x40, debug=False)
-pwm.setPWMFreq(50)
+pwm.setPWMFreq(50) #Must be set to 200Hz if  Proportional valves are run
 
 
 
