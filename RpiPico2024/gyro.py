@@ -1,11 +1,13 @@
 #import select
-from time import sleep
-import time
+from utime import sleep
+import utime as time
 from picozero import pico_temp_sensor, pico_led, LED
 import machine
 from machine import Pin, I2C
 from imu import MPU6050
 
+# Conversion factor for g to m/s²
+g_to_m_s2 = 9.80665
 
 class gyro():
     buf_len = 10
@@ -18,6 +20,9 @@ class gyro():
     Nrot = 0
     rottime = 0
     timezero = time.ticks_ms()
+    velocity = {'x': 0, 'y': 0, 'z': 0}
+    # Time management
+    prev_time = time.ticks_ms()
     
     def __init__(self):
         print("Gyro initialisoinnissa")
@@ -36,7 +41,27 @@ class gyro():
         self.Nrot = self.Nrot + average/360*(time.ticks_ms()-self.timezero)/1000
         #print("Nrot " + str(self.Nrot) + " average=" + str(average) + "  tick_ms " + str(time.ticks_ms()) + "  " + str(self.timezero) + " " + str((time.ticks_ms()-self.timezero)/1000))
         self.timezero = time.ticks_ms()
-    
+
+        #Calculate velocity
+        # Get current time and calculate time delta in seconds
+        current_time = time.ticks_ms()
+        delta_time = (time.ticks_diff(current_time, self.prev_time)) / 1000.0  # Convert ms to seconds
+        self.prev_time = current_time
+        accel_data = self.imu.accel.xyz
+        #print(f"Acceldata: {accel_data}")
+        accel_data_m_s2 = {
+        'x': accel_data[0] * g_to_m_s2,
+        'y': accel_data[1] * g_to_m_s2,
+        'z': accel_data[2] * g_to_m_s2
+        }
+        # Integrate acceleration to get velocity (v = v0 + a * dt)
+        self.velocity['x'] += accel_data_m_s2['x'] * delta_time
+        self.velocity['y'] += accel_data_m_s2['y'] * delta_time
+        self.velocity['z'] += accel_data_m_s2['z'] * delta_time
+        #print(f"deltatime: {delta_time}")
+
+         
+
     def buf_average(self):
         average = sum(self.buf)/self.buf_len
         return average
@@ -72,13 +97,17 @@ class gyro():
                         + [gr.buf_average(),gr.bufx_average(),gr.bufy_average()]
                     print(f"Nrot,timems,bufave,bufxave,bufyave: {gyrotulos}") 
                     print(f"{self.get_Nrot_and_time()}")
+                    print(f"Velocity: {self.velocity['x']}, {self.velocity['y']}, {self.velocity['z']}")
                 sleep(0.1)
         
         except KeyboardInterrupt:
             machine.reset()  
 
 
+
+
 if __name__ == "__main__":
     print("Gyro testi")
     gr = gyro()
     gr.gyro_test()
+ 
