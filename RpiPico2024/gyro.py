@@ -42,7 +42,7 @@ class gyro():
         #print("Nrot " + str(self.Nrot) + " average=" + str(average) + "  tick_ms " + str(time.ticks_ms()) + "  " + str(self.timezero) + " " + str((time.ticks_ms()-self.timezero)/1000))
         self.timezero = time.ticks_ms()
 
-        #Calculate velocity
+        #Calculate velocity. NOTE! Velocity calculation is not very robust and should be improved.
         # Get current time and calculate time delta in seconds
         current_time = time.ticks_ms()
         delta_time = (time.ticks_diff(current_time, self.prev_time)) / 1000.0  # Convert ms to seconds
@@ -97,7 +97,7 @@ class gyro():
                         + [gr.buf_average(),gr.bufx_average(),gr.bufy_average()]
                     print(f"Nrot,timems,bufave,bufxave,bufyave: {gyrotulos}") 
                     print(f"{self.get_Nrot_and_time()}")
-                    print(f"Velocity: {self.velocity['x']}, {self.velocity['y']}, {self.velocity['z']}")
+                    #print(f"Velocity: {self.velocity['x']}, {self.velocity['y']}, {self.velocity['z']}")
                 sleep(0.1)
         
         except KeyboardInterrupt:
