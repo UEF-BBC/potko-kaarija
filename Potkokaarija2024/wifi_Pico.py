@@ -53,7 +53,12 @@ def connect_to_wifi():
     pico_led.on()
     return ip
     
-      
+def get_device_info():
+    # Get the hostname and IP address of the device
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+    return hostname, ip_address
+
 def request_device_info():
 
     # Create a UDP socket
@@ -80,6 +85,23 @@ def request_device_info():
     
     s.close()
     return devices
+
+def respond_to_device_query():
+    # Create a UDP socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    s.bind(('', 12345))  # Bind to port 12345
+
+    while True:
+        data, addr = s.recvfrom(1024)
+        if data.decode() == "REQUEST_DEVICE_INFO":
+            # Get device info
+            hostname, ip_address = get_device_info()
+
+            # Prepare response message
+            response_message = f"{hostname} {ip_address}"
+            s.sendto(response_message.encode(), addr)
+            print(f"Sent response to {addr}: {response_message}")
 
 def get_host_ip(wanted_hostname):
     # Get IP address of the host
