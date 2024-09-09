@@ -1,8 +1,10 @@
+#Gyroscope server run on Pico that reads data from gyroscope and sends it to the RasPi
 import _thread
 import utime as time
 import socket
 from gyro import gyro
-import wifi
+import wifi_Pico as wifi
+
 
 # Shared buffer to store gyroscope data
 bufferNrot = []
@@ -53,6 +55,11 @@ def wifi_server_thread():
     print("Start Wi-Fi server")
     # Initialize Wi-Fi connection and get IP address 
     ip = wifi.connect_to_wifi()
+
+    #wait that client asks server name and IP and return it. After that the client can start to ask gyro data
+    hostname, ip_address = wifi.get_device_info()
+    print(f'Hostname: {hostname}, IP address: {ip_address}')
+    wifi.respond_to_device_query()
 
     # Set up server socket
     addr_info = socket.getaddrinfo('0.0.0.0', 80)

@@ -1,5 +1,6 @@
 import socket
 import time
+import wifi_Rpi as wifi
 
 # Replace with the IP address of your Raspberry Pi Pico
 HOST = '192.168.147.110'  # IP address of the Pico
