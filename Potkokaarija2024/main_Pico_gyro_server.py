@@ -16,6 +16,21 @@ lock = _thread.allocate_lock()
 # Initialize the gyro sensor
 gyro_sensor = gyro()
 
+
+# Function to calculate average of the buffer
+def calculate_average():
+    with lock:
+        if len(bufferNrot) == 0:
+            return 0
+        return sum(bufferNrot) / len(bufferNrot)
+    
+# Get the newest value from the buffer
+def get_newest_value():
+    with lock:
+        if len(bufferNrot) == 0:
+            return 0
+        return [bufferNrot[-1],bufferTime[-1]]
+
 # Thread 1: Reading gyro data and updating buffer every 0.1 seconds
 def read_gyro_thread():
     print("Start reading gyro data")
@@ -36,30 +51,17 @@ def read_gyro_thread():
         
         time.sleep(0.1)
 
-# Function to calculate average of the buffer
-def calculate_average():
-    with lock:
-        if len(bufferNrot) == 0:
-            return 0
-        return sum(bufferNrot) / len(bufferNrot)
-    
-# Get the newest value from the buffer
-def get_newest_value():
-    with lock:
-        if len(bufferNrot) == 0:
-            return 0
-        return [bufferNrot[-1],bufferTime[-1]]
-
 # Thread 2: Wi-Fi connection and sending average buffer values
 def wifi_server_thread():
     print("Start Wi-Fi server")
     # Initialize Wi-Fi connection and get IP address 
-    ip = wifi.connect_to_wifi()
+    objwifi = wifi.wifi()
+    ip = objwifi.connect_to_wifi()
 
     #wait that client asks server name and IP and return it. After that the client can start to ask gyro data
-    hostname, ip_address = wifi.get_device_info()
+    hostname, ip_address = objwifi.get_device_info()
     print(f'Hostname: {hostname}, IP address: {ip_address}')
-    wifi.respond_to_device_query()
+    objwifi.respond_to_device_query()
 
     # Set up server socket
     addr_info = socket.getaddrinfo('0.0.0.0', 80)

@@ -6,7 +6,7 @@ import wifi_Rpi as wifi
 HOST = '192.168.147.110'  # IP address of the Pico
 PORT = 80             # Port number, should match the Pico's server
 
-host = "raspberrypi5"
+host = "28:cd:c1:09:8e:21"
 hostip = wifi.get_host_ip(host)
 print(f"Host and IP: {host}, {hostip}")
 
